@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Food Delivery</string>
+
+    <!--
+        ════════════════════════════════════════════════════════════════
+        CẤU HÌNH FACEBOOK LOGIN
+        ════════════════════════════════════════════════════════════════
+        Để lấy các giá trị này:
+        1. Truy cập https://developers.facebook.com/
+        2. Tạo App → Add Product "Facebook Login"
+        3. Sao chép App ID và Client Token vào đây
+
+        THAY THẾ:
+          YOUR_FACEBOOK_APP_ID        → App ID của bạn (VD: 1234567890)
+          YOUR_FACEBOOK_CLIENT_TOKEN  → Client Token (trong Settings > Advanced)
+        ════════════════════════════════════════════════════════════════
+    -->
+    <string name="facebook_app_id">2348737445619245</string>
+    <string name="facebook_client_token">6cd54c9a2e58a807e8e5b34c13124a6e</string>
+    <string name="fb_login_protocol_scheme">fb2348737445619245</string>
+
+    <!--
+        ════════════════════════════════════════════════════════════════
+        CẤU HÌNH GOOGLE SIGN-IN
+        ════════════════════════════════════════════════════════════════
+        Để Google Sign-In hoạt động, bạn cần:
+        1. Truy cập https://console.cloud.google.com/
+        2. Tạo OAuth 2.0 Client ID cho Android:
+           - Package name: com.codeforany.food_delivery
+           - SHA-1: lấy bằng lệnh bên dưới
+
+        Lấy SHA-1 debug key:
+          keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+
+        3. Tải file google-services.json về và đặt vào:
+           android/app/google-services.json
+        4. Thêm vào android/build.gradle:
+           classpath 'com.google.gms:google-services:4.4.0'
+        5. Thêm vào android/app/build.gradle:
+           apply plugin: 'com.google.gms.google-services'
+        ════════════════════════════════════════════════════════════════
+    -->
+</resources>
