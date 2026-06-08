@@ -164,8 +164,10 @@ class SVKey {
 
   // ── Payment / SePay ──
   static String get svPaymentCreate     => '${apiBaseUrl}payment/create';
+  static String get svPaymentManualConfirm => '${apiBaseUrl}payment/manual-confirm';
   static String get svPaymentRefund     => '${apiBaseUrl}payment/refund';
   static String svPaymentStatus(dynamic orderId) => '${apiBaseUrl}payment/status/$orderId';
+
   static String get svSepayWebhook      => '${apiBaseUrl}payment/sepay-webhook';
 
   // ── Promotions / Vouchers ──────────────────────────────────────────────────
@@ -218,6 +220,13 @@ class SVKey {
   static String get svGroupLeave         => '${apiBaseUrl}groups/leave';
   static String get svGroupRemoveMember  => '${apiBaseUrl}groups/remove-member';
   static String get svGroupDisband       => '${apiBaseUrl}groups/disband';
+  // Group Cart & Order
+  static String get svGroupCart          => '${apiBaseUrl}groups/cart';
+  static String get svGroupCartAdd       => '${apiBaseUrl}groups/cart/add';
+  static String get svGroupCartUpdate    => '${apiBaseUrl}groups/cart/update';
+  static String get svGroupCartRemove    => '${apiBaseUrl}groups/cart/remove';
+  static String get svGroupCartClear     => '${apiBaseUrl}groups/cart/clear';
+  static String get svGroupCheckout      => '${apiBaseUrl}groups/checkout';
 
   static String svDineInMenu(dynamic canteenId) => '${apiBaseUrl}dine-in/menu/$canteenId';
   static String get svDineInCheckout     => '${apiBaseUrl}dine-in/checkout';

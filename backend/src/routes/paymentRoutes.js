@@ -9,6 +9,7 @@ router.post('/sepay-webhook', PaymentController.sepayWebhook);
 // Protected — chỉ customer
 router.use(verifyToken);
 router.post('/create',                authorizeRole([1]), PaymentController.createPayment);
+router.post('/manual-confirm',        authorizeRole([1]), PaymentController.manualConfirm);
 router.post('/refund',                authorizeRole([1]), PaymentController.refundPayment);
 router.get('/status/:maDonHang',      authorizeRole([1]), PaymentController.getStatus);
 

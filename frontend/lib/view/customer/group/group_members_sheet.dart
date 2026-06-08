@@ -30,7 +30,7 @@ class GroupMembersSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Chủ nhóm + thành viên
-    final ownerEntry = _OwnerEntry(ownerId: group.ownerId, myId: myId);
+    final ownerEntry = _OwnerEntry(ownerId: group.ownerId, myId: myId, group: group);
     final memberList = group.members.where((m) => m.userId != group.ownerId).toList();
     final total = (group.ownerId.isNotEmpty ? 1 : 0) + memberList.length;
 
@@ -106,8 +106,17 @@ class GroupMembersSheet extends StatelessWidget {
 class _OwnerEntry {
   final String ownerId;
   final String myId;
-  const _OwnerEntry({required this.ownerId, required this.myId});
-  String get name => ownerId == myId ? 'Bạn (chủ nhóm)' : 'Chủ nhóm';
+  final GroupModel group;
+  const _OwnerEntry({required this.ownerId, required this.myId, required this.group});
+
+  String get name {
+    // Tìm tên trong danh sách thành viên
+    final m = group.members.where((m) => m.userId == ownerId).firstOrNull;
+    final realName = m?.name ?? '';
+    if (realName.isNotEmpty) return realName;
+    // Fallback nếu không có trong members (trường hợp hiếm)
+    return ownerId == myId ? 'Bạn' : 'Chủ nhóm';
+  }
 }
 
 // ─── Member tile ──────────────────────────────────────────────────────────────

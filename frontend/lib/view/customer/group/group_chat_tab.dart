@@ -113,9 +113,14 @@ class _GroupChatTabState extends State<GroupChatTab> {
                     itemCount: widget.messages.length,
                     itemBuilder: (_, i) {
                       final msg = widget.messages[i];
+
+                      // System message — hiển thị dạng banner thông báo
+                      if (msg.senderId == 'system') {
+                        return _SystemMessageBubble(text: msg.text ?? '');
+                      }
+
                       final isMe = msg.senderId == widget.myId;
                       final isLast = i == widget.messages.length - 1;
-                      // Seen by (những người khác đã xem) — guard null cho data cũ
                       final seenList = msg.seenBy;
                       final seenOthers = seenList
                           .where((id) => id != msg.senderId)
@@ -381,4 +386,33 @@ class _Avatar extends StatelessWidget {
               fontSize: radius * 0.7),
         ),
       );
+}
+
+// -- System Message Bubble (thong bao dat mon nhom) --------------------------
+class _SystemMessageBubble extends StatelessWidget {
+  final String text;
+  const _SystemMessageBubble({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3E0),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFFFB74D)),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('???', style: TextStyle(fontSize: 20)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(color: Color(0xFF5D4037), fontSize: 13, height: 1.5),
+          ),
+        ),
+      ]),
+    );
+  }
 }

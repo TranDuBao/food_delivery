@@ -168,36 +168,51 @@ class GroupService {
 
   // ── Join Request Flow ──────────────────────────────────────────────────────
 
-  /// Tìm nhóm theo mã (tìm trong toàn bộ registry)
-  /// Trả về: 'ok' | 'not_found' | 'already_member' | 'already_requested'
+  /// Tìm nhóm theo mã mời và gửi yêu cầu tham gia qua API backend
+  /// Trả về: 'ok' | 'not_found' | 'already_member' | 'already_requested' | 'error'
   Future<String> requestToJoin({
     required String groupCode,
     required String userId,
     required String userName,
   }) async {
-    final idx = _allGroups.indexWhere(
-        (g) => g.referralCode.toUpperCase() == groupCode.toUpperCase());
-    if (idx == -1) return 'not_found';
+    try {
+      // Kiểm tra local trước (nếu đã là thành viên)
+      final localIdx = _allGroups.indexWhere(
+          (g) => g.referralCode.toUpperCase() == groupCode.toUpperCase() ||
+                 g.id.toUpperCase() == groupCode.toUpperCase());
+      if (localIdx != -1) {
+        final g = _allGroups[localIdx];
+        if (g.ownerId == userId) return 'already_member';
+        if (g.members.any((m) => m.userId == userId)) return 'already_member';
+      }
 
-    final group = _allGroups[idx];
-    if (group.ownerId == userId) return 'already_member';
-    if (group.members.any((m) => m.userId == userId)) return 'already_member';
-    if (group.pendingRequests.any((r) => r.userId == userId)) {
-      return 'already_requested';
+      // Gọi API backend để join (hỗ trợ cả maNhom lẫn maMoi)
+      final res = await ServiceCall.fetchPost(
+        SVKey.svGroupJoin,
+        body: {'groupId': groupCode},
+        isToken: true,
+      );
+
+      if (res['success'] == true) {
+        final data = res['data'] as Map<String, dynamic>? ?? {};
+        if (data['alreadyMember'] == true) return 'already_member';
+        // Reload danh sách nhóm để cập nhật cache
+        if (_currentUserId.isNotEmpty) await initForUser(_currentUserId);
+        return 'ok';
+      } else {
+        final msg = res['message']?.toString() ?? '';
+        if (msg.contains('tồn tại') || msg.contains('không tồn tại')) {
+          return 'not_found';
+        }
+        return 'error';
+      }
+    } on Exception catch (e) {
+      final msg = e.toString();
+      if (msg.contains('tồn tại') || msg.contains('không tồn tại')) {
+        return 'not_found';
+      }
+      return 'error';
     }
-
-    final updated = group.copyWith(
-      pendingRequests: [
-        ...group.pendingRequests,
-        JoinRequest(
-            userId: userId,
-            userName: userName,
-            requestedAt: DateTime.now()),
-      ],
-    );
-    _allGroups[idx] = updated;
-    await _persist();
-    return 'ok';
   }
 
   /// Chủ nhóm chấp nhận yêu cầu tham gia

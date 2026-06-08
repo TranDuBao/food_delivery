@@ -127,12 +127,13 @@ const PaymentController = {
     /**
      * GET /api/payment/status/:maDonHang
      * Flutter polling để biết đơn đã được thanh toán chưa.
+     * Ưu tiên: DB local → SePay API (fallback khi webhook không về được)
      */
     getStatus: async (req, res, next) => {
         try {
             const { maDonHang } = req.params;
             const [payment] = await db.query(
-                `SELECT tt.trangThai, tt.soTien, tt.thoiGianHoanTat, tt.maGiaoDich,
+                `SELECT tt.trangThai, tt.txnRef, tt.soTien, tt.thoiGianHoanTat, tt.maGiaoDich,
                         d.trangThaiThanhToan
                  FROM thanhtoan tt
                  JOIN donhang d ON d.maDonHang = tt.maDonHang
@@ -145,11 +146,61 @@ const PaymentController = {
                 return res.json({ success: true, data: { trangThai: 'not_found' } });
             }
 
+            // Nếu đã success trong DB → trả về luôn
+            if (payment.trangThai === 'success' || payment.trangThaiThanhToan === 'paid') {
+                return res.json({ success: true, data: payment });
+            }
+
+            // ── Fallback: Query SePay API trực tiếp ──────────────────────────
+            // Hữu ích khi webhook không về được (localhost, dev env)
+            const SEPAY_API_KEY = process.env.SEPAY_API_KEY || '';
+            if (SEPAY_API_KEY && payment.txnRef) {
+                try {
+                    const https = require('https');
+                    const sepayUrl = `https://my.sepay.vn/userapi/transactions/list?transaction_content=${payment.txnRef}&limit=5`;
+                    const sepayData = await new Promise((resolve, reject) => {
+                        const reqHttp = https.get(sepayUrl, {
+                            headers: { 'Authorization': `Bearer ${SEPAY_API_KEY}` }
+                        }, (resp) => {
+                            let data = '';
+                            resp.on('data', chunk => data += chunk);
+                            resp.on('end', () => {
+                                try { resolve(JSON.parse(data)); } catch { resolve({}); }
+                            });
+                        });
+                        reqHttp.on('error', reject);
+                        reqHttp.setTimeout(5000, () => { reqHttp.destroy(); reject(new Error('timeout')); });
+                    });
+
+                    const transactions = sepayData?.transactions || sepayData?.data || [];
+                    const matched = transactions.find(t => {
+                        const content = (t.transaction_content || t.content || '').toUpperCase();
+                        return content.includes(payment.txnRef.toUpperCase());
+                    });
+
+                    if (matched) {
+                        // Tự cập nhật DB
+                        await db.query(
+                            `UPDATE donhang SET trangThaiThanhToan = 'paid', phuongThucThanhToan = 'SEPAY' WHERE maDonHang = ?`,
+                            [maDonHang]
+                        );
+                        await db.query(
+                            `UPDATE thanhtoan SET trangThai = 'success', maGiaoDich = ?, thoiGianHoanTat = NOW() WHERE maDonHang = ?`,
+                            [matched.id || matched.reference_number || '', maDonHang]
+                        );
+                        return res.json({ success: true, data: { trangThai: 'success', trangThaiThanhToan: 'paid' } });
+                    }
+                } catch (sepayErr) {
+                    console.warn('[getStatus] SePay API fallback error:', sepayErr.message);
+                }
+            }
+
             return res.json({ success: true, data: payment });
         } catch (error) {
             next(error);
         }
     },
+
 
     /**
      * POST /api/payment/refund
@@ -190,6 +241,41 @@ const PaymentController = {
                 success: true,
                 message: 'Yêu cầu hoàn tiền đã được ghi nhận. Tiền sẽ được hoàn lại vào tài khoản của bạn trong 1-3 ngày làm việc.'
             });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    /**
+     * POST /api/payment/manual-confirm  [DEV/DEMO]
+     * Body: { maDonHang }
+     * Đánh dấu đơn đã thanh toán thủ công (dùng khi webhook không về được localhost).
+     */
+    manualConfirm: async (req, res, next) => {
+        try {
+            const { maDonHang } = req.body;
+            const maTaiKhoan = req.user.maTaiKhoan;
+
+            const [order] = await db.query(
+                `SELECT maDonHang FROM donhang WHERE maDonHang = ? AND maTaiKhoan = ?`,
+                [maDonHang, maTaiKhoan]
+            );
+
+            if (!order) {
+                return res.status(404).json({ success: false, message: 'Đơn hàng không tồn tại' });
+            }
+
+            await db.query(
+                `UPDATE donhang SET trangThaiThanhToan = 'paid', phuongThucThanhToan = 'SEPAY' WHERE maDonHang = ?`,
+                [maDonHang]
+            );
+            await db.query(
+                `UPDATE thanhtoan SET trangThai = 'success', thoiGianHoanTat = NOW() WHERE maDonHang = ?`,
+                [maDonHang]
+            );
+
+            console.log(`[ManualConfirm] Order ${maDonHang} marked as paid by user ${maTaiKhoan}`);
+            return res.json({ success: true, data: { trangThai: 'success', trangThaiThanhToan: 'paid' } });
         } catch (error) {
             next(error);
         }

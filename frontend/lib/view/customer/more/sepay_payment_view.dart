@@ -64,7 +64,7 @@ class _SepayPaymentViewState extends State<SepayPaymentView>
   }
 
   void _startPolling() {
-    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) => _checkPaymentStatus());
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (_) => _checkPaymentStatus());
   }
 
   void _startCountdown() {
@@ -432,6 +432,57 @@ class _SepayPaymentViewState extends State<SepayPaymentView>
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+
+            // ── Nút xác nhận thủ công ─────────────────────────────────────
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _isPaid ? null : () async {
+                  // Thử check DB trước
+                  await _checkPaymentStatus();
+                  if (_isPaid) return;
+
+                  // Nếu vẫn chưa → gọi manual-confirm (cho môi trường dev/localhost)
+                  try {
+                    final res = await ServiceCall.fetchPost(
+                      SVKey.svPaymentManualConfirm,
+                      isToken: true,
+                      body: {'maDonHang': widget.maDonHang},
+                    );
+                    if (res is Map && res['success'] == true) {
+                      _onPaymentSuccess();
+                    } else {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(res['message']?.toString() ??
+                              'Chưa ghi nhận. Vui lòng chờ...'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (_) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Lỗi kết nối. Thử lại sau...'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.check_circle_outline_rounded),
+                label: const Text('Tôi đã chuyển khoản — Xác nhận'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  side: BorderSide(color: TColor.primary),
+                  foregroundColor: TColor.primary,
+                ),
+              ),
             ),
             const SizedBox(height: 30),
           ],

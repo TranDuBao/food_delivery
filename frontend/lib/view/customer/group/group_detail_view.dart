@@ -7,6 +7,7 @@ import 'chat_service.dart';
 import 'group_chat_tab.dart';
 import 'group_members_sheet.dart';
 import 'group_model.dart';
+import 'group_order_view.dart';
 import 'group_requests_tab.dart';
 import 'group_service.dart';
 import 'group_wallet_view.dart';
@@ -386,6 +387,21 @@ class _GroupDetailViewState extends State<GroupDetailView> {
                 ),
               ),
             ]),
+          IconButton(
+            icon: Icon(Icons.restaurant_menu_rounded, color: TColor.primary),
+            tooltip: 'Đặt món nhóm',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => GroupOrderView(
+                  group: _group,
+                  myId: _myId,
+                  myName: _myName,
+                  isAdmin: _isAdmin,
+                ),
+              ),
+            ),
+          ),
           IconButton(icon: Icon(Icons.person_add_rounded, color: TColor.primary),
               onPressed: _inviteMember, tooltip: 'Mời thành viên'),
           PopupMenuButton<String>(

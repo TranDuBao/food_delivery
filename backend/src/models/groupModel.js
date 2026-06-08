@@ -82,25 +82,27 @@ const GroupModel = {
     return groups;
   },
 
-  joinGroup: async (groupId, userId) => {
-    // Kiểm tra group tồn tại
+  joinGroup: async (groupIdOrCode, userId) => {
+    // Kiểm tra group tồn tại bằng maNhom hoặc maMoi
     const groups = await db.query(
-      `SELECT maNhom, maNguoiTao as ownerId FROM nhom WHERE maNhom = ? AND trangThai = 1`,
-      [groupId]
+      `SELECT maNhom, maNguoiTao as ownerId FROM nhom WHERE (maNhom = ? OR maMoi = ?) AND trangThai = 1`,
+      [groupIdOrCode, groupIdOrCode]
     );
     if (groups.length === 0) throw new Error('Nhóm không tồn tại');
+
+    const realGroupId = groups[0].maNhom;
 
     // Kiểm tra đã là thành viên chưa
     const existing = await db.query(
       `SELECT maThanhVienNhom FROM thanhvien_nhom WHERE maNhom = ? AND maTaiKhoan = ?`,
-      [groupId, userId]
+      [realGroupId, userId]
     );
     if (existing.length > 0) return { alreadyMember: true };
 
     // Thêm vào nhóm
     await db.query(
       `INSERT INTO thanhvien_nhom (maNhom, maTaiKhoan, vaiTro) VALUES (?, ?, 'member')`,
-      [groupId, userId]
+      [realGroupId, userId]
     );
     return { alreadyMember: false };
   },
