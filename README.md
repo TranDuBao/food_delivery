@@ -41,9 +41,9 @@ Hệ thống được phát triển với kiến trúc Client-Server: **Frontend
 * Khách hàng quét mã QR tại bàn ăn ở căn tin.
 * Ứng dụng tự động kích hoạt **Deep Link** (`shipfood://canteen/{maCanteen}`) dẫn trực tiếp tới menu đặt món ăn tại chỗ mà không cần qua quy trình giao hàng.
 
-### 💳 4. Ví Điện Tử Cá Nhân (E-Wallet) & Cổng Thanh Toán VNPAY
+### 💳 4. Ví Điện Tử Cá Nhân (E-Wallet) & Cổng Thanh Toán SePay (VietQR)
 * **Ví tích hợp:** Mỗi tài khoản được cấp một ví cá nhân lưu trữ số dư. Hỗ trợ lịch sử giao dịch rõ ràng (nạp tiền, rút tiền, thanh toán đơn hàng, hoàn tiền khi hủy đơn).
-* **Nạp tiền tự động:** Kết nối trực tuyến với cổng thanh toán **VNPAY** để nạp tiền vào ví hoặc thanh toán đơn hàng trực tiếp một cách bảo mật.
+* **Nạp tiền tự động:** Kết nối trực tuyến với cổng thanh toán tự động **SePay** qua mã quét QR VietQR để nạp tiền vào ví hoặc thanh toán đơn hàng trực tiếp một cách nhanh chóng.
 
 ### 🛡️ 5. Phân Quyền Đa Vai Trò (Multi-role Authorization)
 1. **Khách Hàng (Customer):** Xem menu, đặt món lẻ/nhóm, nạp ví, chat nhóm, theo dõi shipper trên bản đồ, đánh giá món ăn kèm hình ảnh.
@@ -143,9 +143,16 @@ Hệ thống được phát triển với kiến trúc Client-Server: **Frontend
    PORT=3001
    DB_HOST=localhost
    DB_USER=root
-   DB_PASS=
+   DB_PASSWORD=
    DB_NAME=canteen
    JWT_SECRET=your_jwt_secret_key_here
+   
+   # Cấu hình SePay
+   SEPAY_BANK_CODE=MB
+   SEPAY_ACCOUNT_NO=0000000000
+   SEPAY_ACCOUNT_NAME=SHIP FOOD
+   SEPAY_API_KEY=your_sepay_api_key_here
+   SEPAY_CODE_PREFIX=SF
    ```
 4. Khởi chạy Server ở chế độ phát triển (sử dụng nodemon tự động reload khi sửa code):
    ```bash
