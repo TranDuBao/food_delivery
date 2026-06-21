@@ -192,8 +192,9 @@ Dưới đây là một số giao diện thực tế từ quá trình vận hàn
 
 ---
 
-## 👥 Nhóm Tác Giả & Bản Quyền
-* Dự án được xây dựng bởi **Trần Dũ Bảo** cùng các thành viên.
-* Được sử dụng cho mục đích học tập môn **Công Nghệ Mới trong CNTT** - Trường Đại Học.
-
-*Nếu có bất kỳ đóng góp hay câu hỏi nào, vui lòng mở Issue hoặc gửi Email phản hồi về dự án.*
+## 👥 Nhóm Tác Giả & Liên Hệ
+* **Nhóm tác giả:** Trần Dũ Bảo & Dương Minh Quốc Bảo
+* **Trường:** Trường Đại học Công nghiệp TP.HCM (IUH)
+* **Môn học:** Công Nghệ Mới trong CNTT
+* **Email:** [dubao1005@gmail.com](mailto:dubao1005@gmail.com)
+* **Số điện thoại:** 0325176093
