@@ -148,11 +148,11 @@ Hệ thống được phát triển với kiến trúc Client-Server: **Frontend
    JWT_SECRET=your_jwt_secret_key_here
    
    # Cấu hình SePay
-   SEPAY_BANK_CODE=MB
+   SEPAY_BANK_CODE=xxxxxxx
    SEPAY_ACCOUNT_NO=0000000000
    SEPAY_ACCOUNT_NAME=SHIP FOOD
-   SEPAY_API_KEY=your_sepay_api_key_here
-   SEPAY_CODE_PREFIX=SF
+   SEPAY_API_KEY=xxxxxxxxxx
+   SEPAY_CODE_PREFIX=xxxxxxx
    ```
 4. Khởi chạy Server ở chế độ phát triển (sử dụng nodemon tự động reload khi sửa code):
    ```bash
